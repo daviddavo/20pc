@@ -1,12 +1,5 @@
 package ficheros;
 
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -29,34 +22,12 @@ public class ServidorFicheros {
 		// Try-with-resources auto-closes the socket if something
 		// goes wrong
 		try (ServerSocket serverSocket = new ServerSocket(port, 1024, host)) {
-			System.out.println("Waiting for input");
-			Socket socket = serverSocket.accept();
-			System.out.println("Connection stablished");
-			ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-			
-			FileInfoRequest fir = (FileInfoRequest) ois.readObject();
-			System.out.println("Should send " + fir.getFileName());
-			
-			File file = new File(fir.getFileName());
-			InputStream fis = new FileInputStream(file);
-			
-			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-			oos.writeObject(new FileInfoResponse(fir.getFileName(), "", file.length()));
-			
-			System.out.println("Trying to send file");
-			OutputStream fos = socket.getOutputStream();
-			
-			int bytes;
-			byte[] buf = new byte[4*1024];
-			while ((bytes = fis.read(buf)) > 0) {
-				fos.write(buf, 0, bytes);
-				System.out.printf("Sent %d bytes%n", bytes);
+			while (true) {
+				System.out.println("Waiting for input");
+				Socket socket = serverSocket.accept();
+				Thread t = new ThreadServidor(socket);
+				t.start();
 			}
-			
-			fis.close();
-			socket.close();
-			
-			System.out.println("Server closed");
 		} catch (Exception e) {
 			System.err.println(e);
 		}

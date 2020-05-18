@@ -23,23 +23,18 @@ public class ClienteFicheros {
 		String remoteFname = argv[2];
 		String localFname = argv[3];
 		
-		// It's networking time
-		// Try-with-resources auto-closes the socket if something goes wrong
 		try (Socket socket = new Socket(host, port)) {
 			System.out.println("Client: Connection stablished");
 			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 			
+			// Sending request
 			oos.writeObject(new FileInfoRequest(remoteFname));
-			
-			System.out.println("Client: Waiting response");
-			ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-			FileInfoResponse fir = (FileInfoResponse) ois.readObject();
-			System.out.printf("Response: fname: %s, size: %d%n", fir.getFilename(), fir.getSize());
 			
 			InputStream is = socket.getInputStream();
 			File file = new File(localFname);
 			OutputStream fos = new FileOutputStream(localFname);
 			
+			// Writing response
 			int bytes;
 			byte[] buf = new byte[4*1024];
 			while ((bytes = is.read(buf)) > 0) {
