@@ -1,11 +1,15 @@
 package pr05b.mensajes;
 
+import java.io.Serializable;
+
 /**
  * Sirve como raíz de la jerarquía de mensajes que deberemos
  * diseñar. Tiene como atributos al tipo, origen y destino del
  * mensaje en cuestión
  */
-public abstract class Mensaje {
+public abstract class Mensaje implements Serializable {
+	private static final long serialVersionUID = -5415242270020452110L;
+
 	public enum Tipo {
 		// Servidor
 		MENSAJE_CONFIRMACION_CONEXION,
@@ -21,7 +25,21 @@ public abstract class Mensaje {
 		MENSAJE_PREPARADO_CLIENTESERVIDOR
 	}
 	
+	private String _destino = null;
+	private String _origen = null;
+	
+	public Mensaje(String destino, String origen) {
+		_destino = destino;
+		_origen = origen;
+	}
+	
 	public abstract Tipo getTipo();
-	public abstract String getOrigen();
-	public abstract String getDestino();
+	
+	public String getOrigen() {
+		return _origen;
+	}
+	
+	public String getDestino() {
+		return _destino;
+	}
 }

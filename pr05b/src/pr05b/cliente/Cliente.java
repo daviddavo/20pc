@@ -1,4 +1,16 @@
 package pr05b.cliente;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+
+import pr05b.cliente.comandos.Command;
+import pr05b.cliente.comandos.CommandFactory;
+import pr05b.mensajes.ConexionMensaje;
+
 /**
  * Clase principal de la aplicación cliente. Tendrá al menos los siguientes
  * atributos: nombre de usuario, dirección ip de la máquina. Puedes tener también
@@ -8,7 +20,65 @@ package pr05b.cliente;
  * Además ofrece el soporte para la interacción con el usuario del sistema.
  */
 public class Cliente {
-	public static void main(String [] argv) {
+	public static final String SERVIDOR = "servidor";
+	
+	public String _username = null;
+	public InetAddress _srvAddr = null;
+	public int _srvPort;
+	
+	public void repl() throws IOException {
+		BufferedReader cliin = new BufferedReader(new InputStreamReader(System.in));
 		
+		if (_username == null) {
+			System.out.print("Enter username: ");
+			_username = cliin.readLine();
+			if (_username.equals(SERVIDOR)) {
+				throw new IllegalArgumentException("Username can't be " + SERVIDOR);
+			}
+		}
+		
+		if (_srvAddr == null) {
+			System.out.print("Enter server address (host:port): ");
+			String aux[] = cliin.readLine().split(":");
+			_srvAddr = InetAddress.getByName(aux[0]);
+			_srvPort = Integer.parseInt(aux[1]);
+		}
+		
+		// We create an REPL
+		System.out.println("Welcome to Pr05 Client. Type \"help\" for help");
+		
+		Socket socket = new Socket(_srvAddr, _srvPort);
+		new OyenteCliente(socket).start();
+		
+		ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+		oos.writeObject(new ConexionMensaje(SERVIDOR, _username));
+		// TODO: Esperar a que reciba confirmación
+		while (true) {
+			System.out.print("> ");
+			Command c = CommandFactory.parse(cliin.readLine());
+			if (c != null) { 
+				c.exec();
+				// TODO: Esperar a que se escriba respuesta si es necesario
+			} else {
+				System.out.println("Error: Command not found, type \"help\" to get available commands");
+			}
+		}
+	}
+	
+	public static void main(String [] argv) throws IOException {
+		// We parse the CLI and add it to our "controller"
+		
+		Cliente c = new Cliente();
+		if (argv.length >= 1) {
+			c._srvAddr = InetAddress.getByName(argv[0].split(":")[0]);
+			c._srvPort = Integer.parseInt(argv[0].split(":")[1]);
+		}
+		
+		if (argv.length >= 2) {
+			c._username = argv[1];
+		}
+		
+		// Now we invoke the interface to our controller
+		c.repl();
 	}
 }

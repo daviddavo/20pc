@@ -30,13 +30,12 @@ public class OyenteCliente extends Thread {
 				Mensaje msg = (Mensaje) ois.readObject();
 				
 				switch (msg.getTipo()) {
+				case MENSAJE_CONFIRMACION_CONEXION:
+					System.out.printf("Succesfully connected to %s%n", _socket.getInetAddress().getHostAddress());
+					break;
 				case MENSAJE_CERRAR_CONEXION:
 					break;
-				case MENSAJE_CONEXION:
-					break;
 				case MENSAJE_CONFIRMACION_CERRAR_CONEXION:
-					break;
-				case MENSAJE_CONFIRMACION_CONEXION:
 					break;
 				case MENSAJE_CONFIRMACION_LISTA_USUARIOS:
 					break;
@@ -50,6 +49,8 @@ public class OyenteCliente extends Thread {
 					break;
 				case MENSAJE_PREPARADO_SERVIDORCLIENTE:
 					break;
+				// Mensajes no válidos (debería usarlos el servidor)
+				case MENSAJE_CONEXION:
 				default:
 					break;
 				}

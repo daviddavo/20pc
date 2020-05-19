@@ -14,26 +14,29 @@ import java.net.UnknownHostException;
  * con cada usuario.
  */
 public class Servidor {
-	private static final String USAGE = "Usage: ./servidor [HOST] PORT";
+	private static final String USAGE = "Usage: ./servidor [HOST:]PORT";
 	private static final int EXIT_INCORRECT_ARGUMENTS = 1;
 	
-	public void main(String [] argv) throws UnknownHostException {		
-		if (argv.length < 1 || argv.length > 2) {
+	public static void main(String [] argv) throws UnknownHostException {		
+		if (argv.length != 1) {
 			System.err.println(USAGE);
 			System.exit(EXIT_INCORRECT_ARGUMENTS);
 		}
 		
 		InetAddress host;
 		Integer port;
-		if (argv.length == 1) {
-			host = InetAddress.getByName(argv[0]);
-			port = Integer.parseInt(argv[1]);
+		String [] aux = argv[0].split(":");
+		
+		if (aux.length == 2) {
+			host = InetAddress.getByName(aux[0]);
+			port = Integer.parseInt(aux[1]);
 		} else {
 			host = InetAddress.getLocalHost();
-			port = Integer.parseInt(argv[0]);
+			port = Integer.parseInt(aux[0]);
 		}
 		
 		try (ServerSocket ss = new ServerSocket(port, 0, host)){
+			System.out.printf("Server listening at %s:%d%n", ss.getInetAddress().getHostAddress(), ss.getLocalPort());
 			while (true) {
 				Socket socket = ss.accept();
 				(new OyenteServidor(socket)).start();

@@ -13,5 +13,5 @@ import java.util.ArrayList;
 public class Usuario {
 	String _userName;
 	InetAddress _addr;
-	ArrayList<Fichero> _info;
+	ArrayList<InfoFichero> _info;
 }
