@@ -6,7 +6,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class ServidorFicheros {
-	private static final String USAGE = "Usage: ./servidor [HOST] [PORT] [folder]";
+	private static final String USAGE = "Usage: ./servidor [HOST] [PORT]";
 	private static final int EXIT_INCORRECT_ARGUMENTS = 1;
 	
 	public static void main(String [] argv) throws UnknownHostException {
@@ -21,7 +21,7 @@ public class ServidorFicheros {
 		// It's networking time
 		// Try-with-resources auto-closes the socket if something
 		// goes wrong
-		try (ServerSocket serverSocket = new ServerSocket(port, 1024, host)) {
+		try (ServerSocket serverSocket = new ServerSocket(port, 0, host)) {
 			while (true) {
 				System.out.println("Waiting for input");
 				Socket socket = serverSocket.accept();

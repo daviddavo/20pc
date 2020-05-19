@@ -1,4 +1,7 @@
-package pr05b;
+package pr05b.modelo;
+
+import java.net.InetAddress;
+import java.util.ArrayList;
 
 /**
  * Guarda información para un usaurio registrado en el sistema.
@@ -8,5 +11,7 @@ package pr05b;
  * almacenados en el sitema.
  */
 public class Usuario {
-
+	String _userName;
+	InetAddress _addr;
+	ArrayList<Fichero> _info;
 }

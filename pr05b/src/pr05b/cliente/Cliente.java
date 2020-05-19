@@ -1,4 +1,4 @@
-package pr05b;
+package pr05b.cliente;
 /**
  * Clase principal de la aplicación cliente. Tendrá al menos los siguientes
  * atributos: nombre de usuario, dirección ip de la máquina. Puedes tener también
@@ -8,5 +8,7 @@ package pr05b;
  * Además ofrece el soporte para la interacción con el usuario del sistema.
  */
 public class Cliente {
-
+	public static void main(String [] argv) {
+		
+	}
 }
