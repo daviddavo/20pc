@@ -7,6 +7,7 @@ public class CommandFactory {
 	static final Command [] _clist = {
 		new HelpCommand(),
 		new ExitCommand(),
+		new GetUserListCommand(),
 		new NoneCommand()
 	};
 	

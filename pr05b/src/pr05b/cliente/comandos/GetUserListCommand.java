@@ -1,15 +1,20 @@
 package pr05b.cliente.comandos;
 
+import pr05b.cliente.OyenteCliente;
+
 public class GetUserListCommand extends Command {
 
 	protected GetUserListCommand() {
-		super("users", "shows users list");
+		super("users", "shows connected users to server");
 	}
 
 	@Override
-	public void exec() {
-		// TODO Auto-generated method stub
-		System.err.println("Not implemented yet");
+	public void exec(OyenteCliente oc) {
+		try {
+			oc.waitListaUsuarios();
+		} catch (Exception e){
+			System.err.println(e);
+		}
 	}
 
 }

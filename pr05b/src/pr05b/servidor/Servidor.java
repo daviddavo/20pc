@@ -14,8 +14,28 @@ import java.net.UnknownHostException;
  * con cada usuario.
  */
 public class Servidor {
+	public static final String SERVIDOR = "servidor";
 	private static final String USAGE = "Usage: ./servidor [HOST:]PORT";
 	private static final int EXIT_INCORRECT_ARGUMENTS = 1;
+	private InetAddress _host;
+	private int _port;
+	
+	public Servidor(InetAddress host, int port) {
+		_host = host;
+		_port = port;
+	}
+	
+	public void runOyente() {
+		try (ServerSocket ss = new ServerSocket(_port, 0, _host)){
+			System.out.printf("Server listening at %s:%d%n", ss.getInetAddress().getHostAddress(), ss.getLocalPort());
+			while (true) {
+				Socket socket = ss.accept();
+				(new OyenteServidor(socket, this)).start();
+			}
+		} catch (IOException e) {
+			System.err.println(e);
+		}
+	}
 	
 	public static void main(String [] argv) throws UnknownHostException {		
 		if (argv.length != 1) {
@@ -35,14 +55,10 @@ public class Servidor {
 			port = Integer.parseInt(aux[0]);
 		}
 		
-		try (ServerSocket ss = new ServerSocket(port, 0, host)){
-			System.out.printf("Server listening at %s:%d%n", ss.getInetAddress().getHostAddress(), ss.getLocalPort());
-			while (true) {
-				Socket socket = ss.accept();
-				(new OyenteServidor(socket)).start();
-			}
-		} catch (IOException e) {
-			System.err.println(e);
-		}
+		Servidor s = new Servidor(host, port);
+		s.readUsuarios();
+		s.readInformacion();
+		s.runOyente();
+		s.writeFiles();
 	}
 }

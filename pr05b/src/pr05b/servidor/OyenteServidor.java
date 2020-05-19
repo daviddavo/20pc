@@ -15,10 +15,12 @@ import pr05b.mensajes.*;
  */
 public class OyenteServidor extends Thread {
 	private Socket _socket;
-	private static final String SERVIDOR = "servidor";
+	private Servidor _servidor;
 	
-	public OyenteServidor(Socket socket) {
+	public OyenteServidor(Socket socket, Servidor servidor) {
+		super("OyenteServidor");
 		_socket = socket;
+		_servidor = servidor;
 	}
 	
 	@Override
@@ -28,12 +30,13 @@ public class OyenteServidor extends Thread {
 			while (true) {
 				Mensaje msg = (Mensaje) ois.readObject();
 				
+				System.out.printf(">> %s de %s para %s%n",
+					msg.getTipo().toString(), msg.getOrigen(), msg.getDestino());
+				
 				switch (msg.getTipo()) {
 				case MENSAJE_CONEXION:
 					System.out.printf("Nuevo cliente (%s) conectado desde %s%n", msg.getOrigen(), _socket.getInetAddress().getHostAddress());
-					oos.writeObject(new ConexionConfirmacionMensaje(msg.getOrigen(), SERVIDOR));
-					break;
-				case MENSAJE_CONFIRMACION_LISTA_USUARIOS:
+					oos.writeObject(new ConexionConfirmacionMensaje(msg.getOrigen(), Servidor.SERVIDOR));
 					break;
 				case MENSAJE_CERRAR_CONEXION:
 					break;
@@ -42,6 +45,7 @@ public class OyenteServidor extends Thread {
 				case MENSAJE_EMITIR_FICHERO:
 					break;
 				case MENSAJE_LISTA_USUARIOS:
+					oos.writeObject(new ListaUsuariosConfirmacionMensaje(msg.getOrigen(), Servidor.SERVIDOR, _servidor.getListaUsuarios()));
 					break;
 				case MENSAJE_PEDIR_FICHERO:
 					break;
@@ -51,6 +55,7 @@ public class OyenteServidor extends Thread {
 					break;
 				// Mensajes no válidos (debería usarlos el cliente)
 				case MENSAJE_CONFIRMACION_CONEXION:
+				case MENSAJE_CONFIRMACION_LISTA_USUARIOS:
 				default:
 					break;
 				}

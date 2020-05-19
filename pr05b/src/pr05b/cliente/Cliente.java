@@ -10,6 +10,7 @@ import java.net.Socket;
 import pr05b.cliente.comandos.Command;
 import pr05b.cliente.comandos.CommandFactory;
 import pr05b.mensajes.ConexionMensaje;
+import pr05b.servidor.Servidor;
 
 /**
  * Clase principal de la aplicación cliente. Tendrá al menos los siguientes
@@ -20,8 +21,6 @@ import pr05b.mensajes.ConexionMensaje;
  * Además ofrece el soporte para la interacción con el usuario del sistema.
  */
 public class Cliente {
-	public static final String SERVIDOR = "servidor";
-	
 	public String _username = null;
 	public InetAddress _srvAddr = null;
 	public int _srvPort;
@@ -32,8 +31,8 @@ public class Cliente {
 		if (_username == null) {
 			System.out.print("Enter username: ");
 			_username = cliin.readLine();
-			if (_username.equals(SERVIDOR)) {
-				throw new IllegalArgumentException("Username can't be " + SERVIDOR);
+			if (_username.equals(Servidor.SERVIDOR)) {
+				throw new IllegalArgumentException("Username can't be " + Servidor.SERVIDOR);
 			}
 		}
 		
@@ -48,17 +47,16 @@ public class Cliente {
 		System.out.println("Welcome to Pr05 Client. Type \"help\" for help");
 		
 		Socket socket = new Socket(_srvAddr, _srvPort);
-		new OyenteCliente(socket).start();
+		OyenteCliente oc = new OyenteCliente(socket, _username);
+		oc.start();
 		
-		ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-		oos.writeObject(new ConexionMensaje(SERVIDOR, _username));
-		// TODO: Esperar a que reciba confirmación
+		oc.waitSendConexion();
+		
 		while (true) {
 			System.out.print("> ");
 			Command c = CommandFactory.parse(cliin.readLine());
 			if (c != null) { 
-				c.exec();
-				// TODO: Esperar a que se escriba respuesta si es necesario
+				c.exec(oc);
 			} else {
 				System.out.println("Error: Command not found, type \"help\" to get available commands");
 			}
