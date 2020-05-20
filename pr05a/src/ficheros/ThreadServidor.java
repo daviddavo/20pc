@@ -9,12 +9,9 @@ import java.net.Socket;
 
 class ThreadServidor extends Thread {
 	private Socket _socket;
-	private Long _id;
-	private static Long _nextid = 0l;
 	
 	ThreadServidor(Socket socket) {
 		_socket = socket;
-		_id = ++_nextid;
 	}
 	
 	@Override

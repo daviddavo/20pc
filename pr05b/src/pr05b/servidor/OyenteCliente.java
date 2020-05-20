@@ -16,12 +16,12 @@ import pr05b.modelo.Usuario;
  */
 public class OyenteCliente extends Thread {
 	Socket _socket;
-	Servidor _servidor;
+	volatile Servidor _servidor;
 	ObjectInputStream _ois;
 	ObjectOutputStream _oos;
 	
 	public OyenteCliente(Socket socket, Servidor servidor) {
-		super("OyenteServidor");
+		super("OyenteCliente-"+socket.getPort());
 		_socket = socket;
 		_servidor = servidor;
 		
@@ -60,7 +60,10 @@ public class OyenteCliente extends Thread {
 					Usuario u = _servidor.getUsuarioByFilename(fname);
 					OyenteCliente oc = _servidor.getOyenteClienteByUsername(u.getUserName());
 					// TODO Paso 2: Enviar el mensaje MENSAJE_EMITIR_FICHERO
-					oc._oos.writeObject(new EmitirFicheroMensaje(u.getUserName(), msg.getOrigen(), fname)); 
+					if (oc != null)
+						oc._oos.writeObject(new EmitirFicheroMensaje(u.getUserName(), msg.getOrigen(), fname));
+					else
+						System.out.printf("User %s not connected%n", u.getUserName());
 				}
 					break;
 				case MENSAJE_PREPARADO_CLIENTESERVIDOR:

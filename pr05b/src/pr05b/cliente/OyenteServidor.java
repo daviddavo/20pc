@@ -33,7 +33,7 @@ public class OyenteServidor extends Thread {
 	private List<Usuario> _listaUsuarios;
 	
 	public OyenteServidor(Socket socket, String username) throws IOException {
-		super("OyenteCliente");
+		super("OyenteServidor-"+username);
 		_socket = socket;
 		_oos = new ObjectOutputStream(_socket.getOutputStream());
 		_username = username;

@@ -31,7 +31,7 @@ public class ClienteFicheros {
 			
 			InputStream is = socket.getInputStream();
 			File file = new File(localFname);
-			OutputStream fos = new FileOutputStream(localFname);
+			OutputStream fos = new FileOutputStream(file);
 			
 			// Writing response
 			int bytes;

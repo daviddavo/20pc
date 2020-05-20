@@ -30,8 +30,15 @@ public class Servidor {
 	private static final int EXIT_INCORRECT_ARGUMENTS = 1;
 	private InetAddress _host;
 	private int _port;
+	// Nota: Podríamos crear un lock para acceder al hashmap
+	// (al fin y al cabo es el problema de los readers-writers)
+	// Como ya lo hemos hecho en prácticas anteriores, no mostramos
+	// la implementación y usamos directamente ConcurrentHashMap que
+	// tiene optimizaciones de bajo nivel, y el bloqueo se realiza a nivel
+	// de tabla y permite incluso escrituras concurrentes a distintas claves
+	// (tendríamos que crear nuesttra propia clase Map para hacerlo
 	private ConcurrentHashMap<String, Usuario> _mapUsuarios;
-	private Map<OyenteCliente, Usuario> _mapClientes;
+	private ConcurrentHashMap<OyenteCliente, Usuario> _mapClientes;
 	private List<InfoFichero> _listaFicheros;
 	
 	public Servidor(InetAddress host, int port) {
@@ -166,6 +173,9 @@ public class Servidor {
 		return null;
 	}
 
+	// TODO: Hay race conditions y además
+	// Aunque sea concurrenthashmap no se actualiza la referencia
+	// TODO: Preguntar sobre esto
 	public void connect(OyenteCliente oc, String origen) {
 		Usuario u = _mapUsuarios.get(origen); 
 		if (u == null) {
@@ -173,13 +183,16 @@ public class Servidor {
 			_mapUsuarios.put(origen, u);
 		}
 		
-		u.setConnected();
 		_mapClientes.put(oc, u);
+		u.setConnected();
 	}
 
 	public void disconnect(OyenteCliente oc) {
-		System.out.printf("%s disconnected%n", _mapClientes.get(oc).getUserName());
-		_mapClientes.get(oc).setDisconnected();
+		Usuario u = _mapClientes.get(oc);
+		u.setDisconnected();
 		_mapClientes.remove(oc);
+		// assert(!u.isConnected());
+		// assert(!_mapUsuarios.get(u.getUserName()).isConnected());
+		System.out.printf("%s disconnected%n", u.getUserName());
 	}
 }
