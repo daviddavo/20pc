@@ -5,7 +5,6 @@ import java.io.OutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.net.Socket;
 
 public class ClienteFicheros {

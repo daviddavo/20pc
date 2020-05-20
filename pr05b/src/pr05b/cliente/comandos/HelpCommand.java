@@ -1,6 +1,6 @@
 package pr05b.cliente.comandos;
 
-import pr05b.cliente.OyenteServidor;
+import pr05b.cliente.Cliente;
 
 public class HelpCommand extends Command {
 
@@ -9,7 +9,7 @@ public class HelpCommand extends Command {
 	}
 
 	@Override
-	public void exec(OyenteServidor oc) {
+	public void exec(Cliente cl) {
 		CommandFactory.printHelp(System.out);
 	}
 

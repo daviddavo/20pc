@@ -1,6 +1,6 @@
 package pr05b.cliente.comandos;
 
-import pr05b.cliente.OyenteServidor;
+import pr05b.cliente.Cliente;
 
 public class NoneCommand extends Command {
 	
@@ -15,7 +15,7 @@ public class NoneCommand extends Command {
 	}
 
 	@Override
-	public void exec(OyenteServidor oc) {
+	public void exec(Cliente cl) {
 		// Este comando solo sirve para imprimir un salto de linea
 	}
 

@@ -7,6 +7,8 @@ public class CommandFactory {
 	static final Command [] _clist = {
 		new HelpCommand(),
 		new ExitCommand(),
+		new ConnectCommand(),
+		new DisconnectCommand(),
 		new GetUserListCommand(),
 		new NoneCommand()
 	};
@@ -35,7 +37,7 @@ public class CommandFactory {
 
 	public static void printHelp(PrintStream out) {
 		for (Command c : _clist) {
-			System.out.printf("%-10s%s%n", c.getName(), c.getHelp());
+			System.out.printf("%-15s%s%n", c.getName(), c.getHelp());
 		}
 	}
 }

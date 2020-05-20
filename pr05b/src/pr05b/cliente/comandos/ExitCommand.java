@@ -1,6 +1,6 @@
 package pr05b.cliente.comandos;
 
-import pr05b.cliente.OyenteServidor;
+import pr05b.cliente.Cliente;
 
 public class ExitCommand extends Command {
 	protected ExitCommand() {
@@ -8,8 +8,13 @@ public class ExitCommand extends Command {
 	}
 
 	@Override
-	public void exec(OyenteServidor oc) {
-		// TODO Auto-generated method stub
-		System.err.println("Not implemented yet");
+	public void exec(Cliente cl) {
+		System.out.println("Bye!");
+		try {
+			cl.disconnect();
+		} catch (Exception e) {
+			System.err.println(e);
+		}
+		cl.stopRepl();
 	}
 }

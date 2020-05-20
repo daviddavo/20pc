@@ -2,6 +2,7 @@ package pr05b.cliente.comandos;
 
 import java.util.Collection;
 
+import pr05b.cliente.Cliente;
 import pr05b.cliente.OyenteServidor;
 import pr05b.modelo.Usuario;
 
@@ -12,9 +13,11 @@ public class GetUserListCommand extends Command {
 	}
 
 	@Override
-	public void exec(OyenteServidor oc) {
+	public void exec(Cliente cl) {
+		OyenteServidor os = cl.getOyenteServidor();
+		if (os == null || !os.isAlive()) throw new IllegalArgumentException("You are not connected to a server");
 		try {
-			Collection<Usuario> lu = oc.waitListaUsuarios();
+			Collection<Usuario> lu = os.waitListaUsuarios();
 			if (lu == null) {
 				System.err.println("There is no response from server");	
 			} else {

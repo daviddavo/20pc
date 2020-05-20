@@ -26,9 +26,10 @@ public class OyenteCliente extends Thread {
 	@Override
 	public void run() {
 		// TODO: Set user as disconnected on failure
+		boolean connected = true;
 		try (ObjectInputStream ois = new ObjectInputStream(_socket.getInputStream());
 			 ObjectOutputStream oos = new ObjectOutputStream(_socket.getOutputStream())) {
-			while (true) {
+			while (connected) {
 				Mensaje msg = (Mensaje) ois.readObject();
 				
 				System.out.printf(">> %s de %s para %s%n",
@@ -41,6 +42,8 @@ public class OyenteCliente extends Thread {
 					oos.writeObject(new ConexionConfirmacionMensaje(msg.getOrigen(), Servidor.SERVIDOR));
 					break;
 				case MENSAJE_CERRAR_CONEXION:
+					connected = false;
+					oos.writeObject(new CerrarConexionConfirmacionMensaje(msg.getOrigen(), Servidor.SERVIDOR));
 					break;
 				case MENSAJE_CONFIRMACION_CERRAR_CONEXION:
 					break;

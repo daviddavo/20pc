@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Collection;
 import java.util.List;
 
 import pr05b.mensajes.*;
@@ -28,6 +27,7 @@ public class OyenteServidor extends Thread {
 	private String _username;
 	private boolean _conectando;
 	private boolean _esperandoListaUsuarios;
+	private boolean _desconectando;
 	private List<Usuario> _listaUsuarios;
 	
 	public OyenteServidor(Socket socket, String username) throws IOException {
@@ -69,16 +69,29 @@ public class OyenteServidor extends Thread {
 		else return _listaUsuarios;
 	}
 	
+	public synchronized boolean waitDisconnect() throws IOException {
+		long endTimeout = System.currentTimeMillis() + TIMEOUT_MILLIS;
+		_desconectando = true;
+		_oos.writeObject(new CerrarConexionMensaje(Servidor.SERVIDOR, _username));
+		try {
+			while (_desconectando && System.currentTimeMillis() < endTimeout) wait(TIMEOUT_MILLIS);
+		} catch (Exception e) {
+			System.err.println(e);
+		}
+		
+		return _desconectando;
+	}
+	
 	@Override
 	public void run() {
+		boolean connected = true;
 		try (ObjectInputStream ois = new ObjectInputStream(_socket.getInputStream()); ){
-			while (true) {
+			while (connected) {
 				Mensaje msg = (Mensaje) ois.readObject();
 				
 				switch (msg.getTipo()) {
 				case MENSAJE_CONFIRMACION_CONEXION:
 					synchronized (this) {
-						System.out.printf("Succesfully connected to %s%n", _socket.getInetAddress().getHostAddress());
 						_conectando = false;
 						notifyAll();
 					}
@@ -91,16 +104,20 @@ public class OyenteServidor extends Thread {
 					}
 					break;
 				case MENSAJE_CONFIRMACION_CERRAR_CONEXION:
+					connected = false;
+					synchronized (this) {
+						_desconectando = false;
+						notifyAll();
+					}
 					break;
 				case MENSAJE_EMITIR_FICHERO:
 					break;
 				case MENSAJE_PEDIR_FICHERO:
 					break;
-				case MENSAJE_PREPARADO_CLIENTESERVIDOR:
-					break;
 				case MENSAJE_PREPARADO_SERVIDORCLIENTE:
 					break;
 				// Mensajes no válidos (debería usarlos el servidor)
+				case MENSAJE_PREPARADO_CLIENTESERVIDOR:
 				case MENSAJE_CONEXION:
 				case MENSAJE_LISTA_USUARIOS:
 				case MENSAJE_CERRAR_CONEXION:
