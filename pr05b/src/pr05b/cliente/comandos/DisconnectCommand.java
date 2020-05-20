@@ -26,7 +26,6 @@ public class DisconnectCommand extends Command {
 		} else {
 			System.out.println("Failed to disconnect");
 		}
-		
 	}
 
 }

@@ -31,13 +31,13 @@ public class Servidor {
 	private InetAddress _host;
 	private int _port;
 	private Map<String, Usuario> _mapUsuarios;
-	private Map<Socket, Usuario> _mapSockets;
+	private Map<OyenteCliente, Usuario> _mapClientes;
 	private List<InfoFichero> _listaFicheros;
 	
 	public Servidor(InetAddress host, int port) {
 		_host = host;
 		_port = port;
-		_mapSockets = new HashMap<Socket, Usuario>();
+		_mapClientes = new HashMap<>();
 	}
 	
 	public void runOyente() {
@@ -147,21 +147,39 @@ public class Servidor {
 			System.err.println(e);
 		}
 	}
+	
+	public Usuario getUsuarioByFilename(String filename) {
+		for (Usuario u : _mapUsuarios.values()) {
+			for (InfoFichero f : u.getInfoFicheros()) {
+				if (f.path.equals(filename)) return u;
+			}
+		}
+		
+		return null;
+	}
+	
+	public OyenteCliente getOyenteClienteByUsername(String username) {
+		for (Map.Entry<OyenteCliente, Usuario> e : _mapClientes.entrySet()) {
+			if (e.getValue().getUserName().equals(username)) return e.getKey();
+		}
+		
+		return null;
+	}
 
-	public void connect(Socket socket, String origen) {
+	public void connect(OyenteCliente oc, String origen) {
 		Usuario u = _mapUsuarios.get(origen); 
 		if (u == null) {
-			u = new Usuario(origen, socket.getInetAddress());
+			u = new Usuario(origen, oc._socket.getInetAddress());
 			_mapUsuarios.put(origen, u);
 		}
 		
 		u.setConnected();
-		_mapSockets.put(socket, u);
+		_mapClientes.put(oc, u);
 	}
 
-	public void disconnect(Socket socket) {
-		System.out.printf("%s disconnected%n", _mapSockets.get(socket).getUserName());
-		_mapSockets.get(socket).setDisconnected();
-		_mapSockets.remove(socket);
+	public void disconnect(OyenteCliente oc) {
+		System.out.printf("%s disconnected%n", _mapClientes.get(oc).getUserName());
+		_mapClientes.get(oc).setDisconnected();
+		_mapClientes.remove(oc);
 	}
 }

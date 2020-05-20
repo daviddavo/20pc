@@ -30,9 +30,6 @@ public class OyenteServidor extends Thread {
 	private ObjectOutputStream _oos;
 	private String _username;
 	private Map<Tipo, Boolean> _expects;
-	private boolean _conectando;
-	private boolean _esperandoListaUsuarios;
-	private boolean _desconectando;
 	private List<Usuario> _listaUsuarios;
 	
 	public OyenteServidor(Socket socket, String username) throws IOException {
@@ -77,6 +74,10 @@ public class OyenteServidor extends Thread {
 		return _waitCommon(new CerrarConexionMensaje(Servidor.SERVIDOR, _username), Tipo.MENSAJE_CONFIRMACION_CERRAR_CONEXION);
 	}
 	
+	public synchronized boolean waitPedirFichero(String filename) throws IOException {
+		return _waitCommon(new PedirFicheroMensaje(Servidor.SERVIDOR, _username, filename), Tipo.MENSAJE_PREPARADO_SERVIDORCLIENTE);
+	}
+	
 	@Override
 	public void run() {
 		boolean connected = true;
@@ -106,12 +107,21 @@ public class OyenteServidor extends Thread {
 					}
 					break;
 				case MENSAJE_EMITIR_FICHERO:
-					break;
-				case MENSAJE_PEDIR_FICHERO:
+					// TODO: Paso 1. Crear proceso emisor (serversocketsiesnecesario?)
+					Emisor e = new Emisor(((EmitirFicheroMensaje) msg).getFilename());
+					// TODO: Paso 2. Enviar mensaje con puerto del emisor (MENSAJE_PREPARADO_CLIENTESERVIDOR)
+					_oos.writeObject(new PreparadoClienteServidorMensaje(msg.getOrigen(), _username, e.getPort()));
 					break;
 				case MENSAJE_PREPARADO_SERVIDORCLIENTE:
+					// TODO: Paso 1. Crear proceso receptor, conectando a ip y puerto que ha llegado
+					// No es necesario que el emisor/receptor envie mensaje, se hace con .accept()
+					synchronized (this) {
+						_expects.put(msg.getTipo(), false);
+						notifyAll();
+					}
 					break;
 				// Mensajes no válidos (debería usarlos el servidor)
+				case MENSAJE_PEDIR_FICHERO:
 				case MENSAJE_PREPARADO_CLIENTESERVIDOR:
 				case MENSAJE_CONEXION:
 				case MENSAJE_LISTA_USUARIOS:

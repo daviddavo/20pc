@@ -10,6 +10,7 @@ public class CommandFactory {
 		new ConnectCommand(),
 		new DisconnectCommand(),
 		new GetUserListCommand(),
+		new DownloadCommand(),
 		new NoneCommand()
 	};
 	

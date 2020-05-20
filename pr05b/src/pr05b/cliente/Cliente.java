@@ -115,4 +115,8 @@ public class Cliente {
 	public void stopRepl() {
 		_replRunning = false;
 	}
+
+	public boolean beginDownload(String filename) throws IOException {
+		return _os.waitPedirFichero(filename);
+	}
 }
