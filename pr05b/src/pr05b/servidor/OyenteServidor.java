@@ -25,6 +25,7 @@ public class OyenteServidor extends Thread {
 	
 	@Override
 	public void run() {
+		// TODO: Set user as disconnected on failure
 		try (ObjectInputStream ois = new ObjectInputStream(_socket.getInputStream());
 			 ObjectOutputStream oos = new ObjectOutputStream(_socket.getOutputStream())) {
 			while (true) {
@@ -36,6 +37,7 @@ public class OyenteServidor extends Thread {
 				switch (msg.getTipo()) {
 				case MENSAJE_CONEXION:
 					System.out.printf("Nuevo cliente (%s) conectado desde %s%n", msg.getOrigen(), _socket.getInetAddress().getHostAddress());
+					_servidor.connect(_socket, msg.getOrigen());
 					oos.writeObject(new ConexionConfirmacionMensaje(msg.getOrigen(), Servidor.SERVIDOR));
 					break;
 				case MENSAJE_CERRAR_CONEXION:
@@ -63,5 +65,7 @@ public class OyenteServidor extends Thread {
 		} catch (ClassNotFoundException | IOException e) {
 			System.err.println(e);
 		}
+		
+		_servidor.disconnect(_socket);
 	}
 }

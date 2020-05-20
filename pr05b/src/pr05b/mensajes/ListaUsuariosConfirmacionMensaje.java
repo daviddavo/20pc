@@ -1,5 +1,6 @@
 package pr05b.mensajes;
 
+import java.util.Collection;
 import java.util.List;
 
 import pr05b.modelo.Usuario;

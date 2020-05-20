@@ -44,13 +44,16 @@ public class Cliente {
 		}
 		
 		// We create an REPL
-		System.out.println("Welcome to Pr05 Client. Type \"help\" for help");
+		System.out.printf("Welcome %s to Pr05 Client. Type \"help\" for help%n", _username);
 		
 		Socket socket = new Socket(_srvAddr, _srvPort);
 		OyenteCliente oc = new OyenteCliente(socket, _username);
 		oc.start();
 		
-		oc.waitSendConexion();
+		if (oc.waitSendConexion()) {
+			System.err.println("No se recibió un mensaje de confirmación de conexión");
+			System.exit(1);
+		}
 		
 		while (true) {
 			System.out.print("> ");

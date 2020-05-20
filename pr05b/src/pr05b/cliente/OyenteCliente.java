@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Collection;
+import java.util.List;
 
 import pr05b.mensajes.*;
+import pr05b.modelo.*;
 import pr05b.servidor.Servidor;
 
 /**
@@ -25,6 +28,7 @@ public class OyenteCliente extends Thread {
 	private String _username;
 	private boolean _conectando;
 	private boolean _esperandoListaUsuarios;
+	private Collection<Usuario> _listaUsuarios;
 	
 	public OyenteCliente(Socket socket, String username) throws IOException {
 		super("OyenteCliente");
@@ -38,7 +42,7 @@ public class OyenteCliente extends Thread {
 	 * así habría que incluir números de secuencia en los mensajes para ver a quién
 	 * pertenece cada respuesta
 	 */
-	public synchronized void waitSendConexion() throws IOException {
+	public synchronized boolean waitSendConexion() throws IOException {
 		long endTimeout = System.currentTimeMillis() + TIMEOUT_MILLIS;
 		_conectando = true;
 		_oos.writeObject(new ConexionMensaje(Servidor.SERVIDOR, _username));
@@ -48,25 +52,21 @@ public class OyenteCliente extends Thread {
 			System.err.println(e);
 		}
 		
-		if (_conectando) {
-			System.err.println("No se recibió un mensaje de confirmación de conexión");
-		}
+		return _conectando;
 	}
 	
-	public synchronized void waitListaUsuarios() throws IOException {
+	public synchronized Collection<Usuario> waitListaUsuarios() throws IOException {
 		long endTimeout = System.currentTimeMillis() + TIMEOUT_MILLIS;
 		_esperandoListaUsuarios = true;
 		_oos.writeObject(new ListaUsuariosMensaje(Servidor.SERVIDOR, _username));
-		System.out.println("Mandando peticion lista usuarios");
 		try {
 			while (_esperandoListaUsuarios && System.currentTimeMillis() < endTimeout) wait(TIMEOUT_MILLIS);
 		} catch (Exception e) {
 			System.err.println(e);
 		}
 		
-		if (_esperandoListaUsuarios) {
-			System.err.println("No se recibió la lista de usuarios");
-		}
+		if (_esperandoListaUsuarios) return null;
+		else return _listaUsuarios;
 	}
 	
 	@Override
@@ -83,11 +83,16 @@ public class OyenteCliente extends Thread {
 						notifyAll();
 					}
 					break;
+				case MENSAJE_CONFIRMACION_LISTA_USUARIOS:
+					synchronized (this) {
+						_listaUsuarios = ((ListaUsuariosConfirmacionMensaje) msg).getListaUsuarios();
+						_esperandoListaUsuarios = false;
+						notifyAll();
+					}
+					break;
 				case MENSAJE_CERRAR_CONEXION:
 					break;
 				case MENSAJE_CONFIRMACION_CERRAR_CONEXION:
-					break;
-				case MENSAJE_CONFIRMACION_LISTA_USUARIOS:
 					break;
 				case MENSAJE_EMITIR_FICHERO:
 					break;

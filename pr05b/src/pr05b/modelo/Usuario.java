@@ -1,5 +1,6 @@
 package pr05b.modelo;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.ArrayList;
 
@@ -10,8 +11,35 @@ import java.util.ArrayList;
  * El servidor almacenará información sobre todos los usuarios
  * almacenados en el sitema.
  */
-public class Usuario {
-	String _userName;
-	InetAddress _addr;
-	ArrayList<InfoFichero> _info;
+public class Usuario implements Serializable {
+	private static final long serialVersionUID = 2889129328878888688L;
+	private String _userName;
+	private InetAddress _addr;
+	private ArrayList<InfoFichero> _info;
+	private boolean _connected = false;
+	
+	public Usuario(String userName, InetAddress inetAddress) {
+		_userName = userName;
+		_addr = inetAddress;
+	}
+	
+	public String getUserName() {
+		return _userName;
+	}
+	
+	public InetAddress getInetAddress() {
+		return _addr;
+	}
+	
+	public void setConnected() {
+		_connected = true;
+	}
+	
+	public void setDisconnected() {
+		_connected = false;
+	}
+	
+	public boolean isConnected () {
+		return _connected;
+	}
 }
