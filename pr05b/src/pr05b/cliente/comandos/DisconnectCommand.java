@@ -21,7 +21,7 @@ public class DisconnectCommand extends Command {
 			failed = true;
 		}
 		
-		if (failed) {
+		if (!failed) {
 			System.out.println("Disconnected!. Use \"connect\" to reconnect");
 		} else {
 			System.out.println("Failed to disconnect");

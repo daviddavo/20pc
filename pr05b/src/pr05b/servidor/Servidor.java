@@ -32,7 +32,7 @@ public class Servidor {
 	private int _port;
 	private Map<String, Usuario> _mapUsuarios;
 	private Map<Socket, Usuario> _mapSockets;
-	private List<InfoFichero> _listaInformacion;
+	private List<InfoFichero> _listaFicheros;
 	
 	public Servidor(InetAddress host, int port) {
 		_host = host;
@@ -85,20 +85,20 @@ public class Servidor {
 	public void readInformacion(String filename) throws IOException {
 		try (FileInputStream fis = new FileInputStream(filename);
 			 ObjectInputStream ois = new ObjectInputStream(fis)) {
-			_listaInformacion = (List<InfoFichero>) ois.readObject();
+			_listaFicheros = (List<InfoFichero>) ois.readObject();
 			System.out.printf("Read %s%n", filename);
 		} catch (ClassNotFoundException e) {
 			System.err.println(e);
 		} catch (FileNotFoundException e) {
 			System.out.printf("File %s not found, creating%n", filename);
-			_listaInformacion = new ArrayList<InfoFichero>();
+			_listaFicheros = new ArrayList<InfoFichero>();
 		}
 	}
 	
 	public void writeInformacion(String filename) throws IOException {
 		try (FileOutputStream fos = new FileOutputStream(filename);
 			 ObjectOutputStream oos = new ObjectOutputStream(fos)) {
-			oos.writeObject(_listaInformacion);
+			oos.writeObject(_listaFicheros);
 		}
 	}
 	
@@ -138,6 +138,9 @@ public class Servidor {
 		
 		try {
 			s.readUsuarios("listausuarios.ser");
+			// TODO: Delete this
+			// s._mapUsuarios.get("davo").getInfoFicheros().add(new InfoFichero("fichero1.txt", -1));
+			// s._mapUsuarios.get("juan").getInfoFicheros().add(new InfoFichero("fichero2.txt", -1));
 			s.readInformacion("infoficheros.ser");
 			s.runOyente();
 		} catch (IOException e) {
@@ -146,10 +149,14 @@ public class Servidor {
 	}
 
 	public void connect(Socket socket, String origen) {
-		Usuario u = new Usuario(origen, socket.getInetAddress());
+		Usuario u = _mapUsuarios.get(origen); 
+		if (u == null) {
+			u = new Usuario(origen, socket.getInetAddress());
+			_mapUsuarios.put(origen, u);
+		}
+		
 		u.setConnected();
 		_mapSockets.put(socket, u);
-		_mapUsuarios.put(origen, u);
 	}
 
 	public void disconnect(Socket socket) {

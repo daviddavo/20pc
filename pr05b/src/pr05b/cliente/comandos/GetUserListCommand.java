@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import pr05b.cliente.Cliente;
 import pr05b.cliente.OyenteServidor;
+import pr05b.modelo.InfoFichero;
 import pr05b.modelo.Usuario;
 
 public class GetUserListCommand extends Command {
@@ -25,6 +26,10 @@ public class GetUserListCommand extends Command {
 				for (Usuario u : lu) {
 					System.out.printf("%-10s%-20s%3c%n",
 						u.getUserName(), u.getInetAddress().getHostAddress(), u.isConnected()?'C':'D');
+					
+					for (InfoFichero f : u.getInfoFicheros()) {
+						System.out.printf("  | %-20s%5d Bytes%n", f.path, f.size);
+					}
 				}
 			}
 		} catch (Exception e){

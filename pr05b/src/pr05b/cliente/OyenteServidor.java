@@ -4,9 +4,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import pr05b.mensajes.*;
+import pr05b.mensajes.Mensaje.Tipo;
 import pr05b.modelo.*;
 import pr05b.servidor.Servidor;
 
@@ -25,6 +29,7 @@ public class OyenteServidor extends Thread {
 	private Socket _socket;
 	private ObjectOutputStream _oos;
 	private String _username;
+	private Map<Tipo, Boolean> _expects;
 	private boolean _conectando;
 	private boolean _esperandoListaUsuarios;
 	private boolean _desconectando;
@@ -35,6 +40,7 @@ public class OyenteServidor extends Thread {
 		_socket = socket;
 		_oos = new ObjectOutputStream(_socket.getOutputStream());
 		_username = username;
+		_expects = new EnumMap<>(Tipo.class);
 	}
 	
 	/*
@@ -42,44 +48,33 @@ public class OyenteServidor extends Thread {
 	 * así habría que incluir números de secuencia en los mensajes para ver a quién
 	 * pertenece cada respuesta, además de usar locks y variables condicionales.
 	 */
-	public synchronized boolean waitSendConexion() throws IOException {
+	private synchronized boolean _waitCommon(Mensaje msg, Tipo expectedResponse) throws IOException {
 		long endTimeout = System.currentTimeMillis() + TIMEOUT_MILLIS;
-		_conectando = true;
-		_oos.writeObject(new ConexionMensaje(Servidor.SERVIDOR, _username));
+		_expects.put(expectedResponse, true);
+		_oos.writeObject(msg);
 		try {
-			while (_conectando && System.currentTimeMillis() < endTimeout) wait(TIMEOUT_MILLIS);
+			while(_expects.get(expectedResponse) && System.currentTimeMillis() < endTimeout) wait(TIMEOUT_MILLIS);
 		} catch (Exception e) {
 			System.err.println(e);
 		}
 		
-		return _conectando;
+		return _expects.get(expectedResponse);
+	}
+	
+	public synchronized boolean waitSendConexion() throws IOException {
+		return _waitCommon(new ConexionMensaje(Servidor.SERVIDOR, _username), Tipo.MENSAJE_CONFIRMACION_CONEXION);
 	}
 	
 	public synchronized List<Usuario> waitListaUsuarios() throws IOException {
-		long endTimeout = System.currentTimeMillis() + TIMEOUT_MILLIS;
-		_esperandoListaUsuarios = true;
-		_oos.writeObject(new ListaUsuariosMensaje(Servidor.SERVIDOR, _username));
-		try {
-			while (_esperandoListaUsuarios && System.currentTimeMillis() < endTimeout) wait(TIMEOUT_MILLIS);
-		} catch (Exception e) {
-			System.err.println(e);
+		if (_waitCommon(new ListaUsuariosMensaje(Servidor.SERVIDOR, _username), Tipo.MENSAJE_CONFIRMACION_LISTA_USUARIOS)) {
+			return null;
+		} else {
+			return _listaUsuarios;
 		}
-		
-		if (_esperandoListaUsuarios) return null;
-		else return _listaUsuarios;
 	}
 	
 	public synchronized boolean waitDisconnect() throws IOException {
-		long endTimeout = System.currentTimeMillis() + TIMEOUT_MILLIS;
-		_desconectando = true;
-		_oos.writeObject(new CerrarConexionMensaje(Servidor.SERVIDOR, _username));
-		try {
-			while (_desconectando && System.currentTimeMillis() < endTimeout) wait(TIMEOUT_MILLIS);
-		} catch (Exception e) {
-			System.err.println(e);
-		}
-		
-		return _desconectando;
+		return _waitCommon(new CerrarConexionMensaje(Servidor.SERVIDOR, _username), Tipo.MENSAJE_CONFIRMACION_CERRAR_CONEXION);
 	}
 	
 	@Override
@@ -92,21 +87,21 @@ public class OyenteServidor extends Thread {
 				switch (msg.getTipo()) {
 				case MENSAJE_CONFIRMACION_CONEXION:
 					synchronized (this) {
-						_conectando = false;
+						_expects.put(msg.getTipo(), false);
 						notifyAll();
 					}
 					break;
 				case MENSAJE_CONFIRMACION_LISTA_USUARIOS:
 					synchronized (this) {
 						_listaUsuarios = ((ListaUsuariosConfirmacionMensaje) msg).getListaUsuarios();
-						_esperandoListaUsuarios = false;
+						_expects.put(msg.getTipo(), false);
 						notifyAll();
 					}
 					break;
 				case MENSAJE_CONFIRMACION_CERRAR_CONEXION:
 					connected = false;
 					synchronized (this) {
-						_desconectando = false;
+						_expects.put(msg.getTipo(), false);
 						notifyAll();
 					}
 					break;
