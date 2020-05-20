@@ -41,26 +41,23 @@ public class OyenteCliente extends Thread {
 					_servidor.connect(_socket, msg.getOrigen());
 					oos.writeObject(new ConexionConfirmacionMensaje(msg.getOrigen(), Servidor.SERVIDOR));
 					break;
+				case MENSAJE_LISTA_USUARIOS:
+					oos.writeObject(new ListaUsuariosConfirmacionMensaje(msg.getOrigen(), Servidor.SERVIDOR, _servidor.getListaUsuarios()));
+					break;
 				case MENSAJE_CERRAR_CONEXION:
 					connected = false;
 					oos.writeObject(new CerrarConexionConfirmacionMensaje(msg.getOrigen(), Servidor.SERVIDOR));
-					break;
-				case MENSAJE_CONFIRMACION_CERRAR_CONEXION:
-					break;
-				case MENSAJE_EMITIR_FICHERO:
-					break;
-				case MENSAJE_LISTA_USUARIOS:
-					oos.writeObject(new ListaUsuariosConfirmacionMensaje(msg.getOrigen(), Servidor.SERVIDOR, _servidor.getListaUsuarios()));
 					break;
 				case MENSAJE_PEDIR_FICHERO:
 					break;
 				case MENSAJE_PREPARADO_CLIENTESERVIDOR:
 					break;
-				case MENSAJE_PREPARADO_SERVIDORCLIENTE:
-					break;
 				// Mensajes no válidos (debería usarlos el cliente)
 				case MENSAJE_CONFIRMACION_CONEXION:
 				case MENSAJE_CONFIRMACION_LISTA_USUARIOS:
+				case MENSAJE_CONFIRMACION_CERRAR_CONEXION:
+				case MENSAJE_EMITIR_FICHERO:
+				case MENSAJE_PREPARADO_SERVIDORCLIENTE:
 				default:
 					break;
 				}
