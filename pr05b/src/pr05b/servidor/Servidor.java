@@ -46,7 +46,7 @@ public class Servidor {
 			System.out.printf("Server listening at %s:%d%n", ss.getInetAddress().getHostAddress(), ss.getLocalPort());
 			while (true) {
 				Socket socket = ss.accept();
-				(new OyenteServidor(socket, this)).start();
+				(new OyenteCliente(socket, this)).start();
 			}
 		} catch (IOException e) {
 			System.err.println(e);

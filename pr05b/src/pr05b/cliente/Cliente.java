@@ -47,7 +47,7 @@ public class Cliente {
 		System.out.printf("Welcome %s to Pr05 Client. Type \"help\" for help%n", _username);
 		
 		Socket socket = new Socket(_srvAddr, _srvPort);
-		OyenteCliente oc = new OyenteCliente(socket, _username);
+		OyenteServidor oc = new OyenteServidor(socket, _username);
 		oc.start();
 		
 		if (oc.waitSendConexion()) {

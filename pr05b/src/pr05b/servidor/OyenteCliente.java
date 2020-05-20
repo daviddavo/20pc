@@ -13,11 +13,11 @@ import pr05b.mensajes.*;
  * continua en el canal de comunicación con el servidor,
  * en un hilo diferente.
  */
-public class OyenteServidor extends Thread {
+public class OyenteCliente extends Thread {
 	private Socket _socket;
 	private Servidor _servidor;
 	
-	public OyenteServidor(Socket socket, Servidor servidor) {
+	public OyenteCliente(Socket socket, Servidor servidor) {
 		super("OyenteServidor");
 		_socket = socket;
 		_servidor = servidor;

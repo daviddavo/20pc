@@ -1,6 +1,6 @@
 package pr05b.cliente.comandos;
 
-import pr05b.cliente.OyenteCliente;
+import pr05b.cliente.OyenteServidor;
 
 public abstract class Command {
 	String _name;
@@ -24,5 +24,5 @@ public abstract class Command {
 		else return null;
 	}
 	
-	public abstract void exec(OyenteCliente oc);
+	public abstract void exec(OyenteServidor oc);
 }

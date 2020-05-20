@@ -2,7 +2,7 @@ package pr05b.cliente.comandos;
 
 import java.util.Collection;
 
-import pr05b.cliente.OyenteCliente;
+import pr05b.cliente.OyenteServidor;
 import pr05b.modelo.Usuario;
 
 public class GetUserListCommand extends Command {
@@ -12,7 +12,7 @@ public class GetUserListCommand extends Command {
 	}
 
 	@Override
-	public void exec(OyenteCliente oc) {
+	public void exec(OyenteServidor oc) {
 		try {
 			Collection<Usuario> lu = oc.waitListaUsuarios();
 			if (lu == null) {

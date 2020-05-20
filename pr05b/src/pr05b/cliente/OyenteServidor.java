@@ -21,16 +21,16 @@ import pr05b.servidor.Servidor;
  * @author davo
  *
  */
-public class OyenteCliente extends Thread {
+public class OyenteServidor extends Thread {
 	private static final int TIMEOUT_MILLIS = 10*1000;
 	private Socket _socket;
 	private ObjectOutputStream _oos;
 	private String _username;
 	private boolean _conectando;
 	private boolean _esperandoListaUsuarios;
-	private Collection<Usuario> _listaUsuarios;
+	private List<Usuario> _listaUsuarios;
 	
-	public OyenteCliente(Socket socket, String username) throws IOException {
+	public OyenteServidor(Socket socket, String username) throws IOException {
 		super("OyenteCliente");
 		_socket = socket;
 		_oos = new ObjectOutputStream(_socket.getOutputStream());
@@ -40,7 +40,7 @@ public class OyenteCliente extends Thread {
 	/*
 	 * Nota: Asumimos que siempre hay un Cliente para un OyenteCliente, de no ser
 	 * así habría que incluir números de secuencia en los mensajes para ver a quién
-	 * pertenece cada respuesta
+	 * pertenece cada respuesta, además de usar locks y variables condicionales.
 	 */
 	public synchronized boolean waitSendConexion() throws IOException {
 		long endTimeout = System.currentTimeMillis() + TIMEOUT_MILLIS;
@@ -55,7 +55,7 @@ public class OyenteCliente extends Thread {
 		return _conectando;
 	}
 	
-	public synchronized Collection<Usuario> waitListaUsuarios() throws IOException {
+	public synchronized List<Usuario> waitListaUsuarios() throws IOException {
 		long endTimeout = System.currentTimeMillis() + TIMEOUT_MILLIS;
 		_esperandoListaUsuarios = true;
 		_oos.writeObject(new ListaUsuariosMensaje(Servidor.SERVIDOR, _username));
@@ -90,8 +90,6 @@ public class OyenteCliente extends Thread {
 						notifyAll();
 					}
 					break;
-				case MENSAJE_CERRAR_CONEXION:
-					break;
 				case MENSAJE_CONFIRMACION_CERRAR_CONEXION:
 					break;
 				case MENSAJE_EMITIR_FICHERO:
@@ -105,6 +103,7 @@ public class OyenteCliente extends Thread {
 				// Mensajes no válidos (debería usarlos el servidor)
 				case MENSAJE_CONEXION:
 				case MENSAJE_LISTA_USUARIOS:
+				case MENSAJE_CERRAR_CONEXION:
 				default:
 					break;
 				}
