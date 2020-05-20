@@ -11,9 +11,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import pr05b.modelo.*;
 
@@ -30,14 +30,14 @@ public class Servidor {
 	private static final int EXIT_INCORRECT_ARGUMENTS = 1;
 	private InetAddress _host;
 	private int _port;
-	private Map<String, Usuario> _mapUsuarios;
+	private ConcurrentHashMap<String, Usuario> _mapUsuarios;
 	private Map<OyenteCliente, Usuario> _mapClientes;
 	private List<InfoFichero> _listaFicheros;
 	
 	public Servidor(InetAddress host, int port) {
 		_host = host;
 		_port = port;
-		_mapClientes = new HashMap<>();
+		_mapClientes = new ConcurrentHashMap<>();
 	}
 	
 	public void runOyente() {
@@ -60,14 +60,14 @@ public class Servidor {
 	public void readUsuarios(String filename) throws IOException {
 		try (FileInputStream fis = new FileInputStream(filename);
 			 ObjectInputStream ois = new ObjectInputStream(fis)) {
-			 _mapUsuarios = (Map<String, Usuario>) ois.readObject();
+			 _mapUsuarios = new ConcurrentHashMap<>((Map<String, Usuario>) ois.readObject());
 			 for (Usuario u: _mapUsuarios.values()) u.setDisconnected();
 			 System.out.printf("Read %s%n", filename);
 		} catch (ClassNotFoundException e) {
 			System.err.println(e);
 		} catch (FileNotFoundException e) {
 			System.out.printf("File %s not found, creating%n", filename);
-			_mapUsuarios = new HashMap<String, Usuario>();
+			_mapUsuarios = new ConcurrentHashMap<String, Usuario>();
 		}
 	}
 	

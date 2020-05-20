@@ -69,7 +69,7 @@ public class OyenteCliente extends Thread {
 					PreparadoClienteServidorMensaje pcsmsg = (PreparadoClienteServidorMensaje) msg;
 					OyenteCliente oc = _servidor.getOyenteClienteByUsername(pcsmsg.getDestino());
 					oc._oos.writeObject(new PreparadoServidorClienteMensaje(pcsmsg.getDestino(), pcsmsg.getOrigen(),
-						this._socket.getInetAddress(), pcsmsg.getPort()));
+						this._socket.getInetAddress(), pcsmsg.getPort(), pcsmsg.getFileName()));
 				}
 					break;
 				// Mensajes no válidos (debería usarlos el cliente)

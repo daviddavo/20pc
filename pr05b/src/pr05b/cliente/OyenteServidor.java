@@ -1,11 +1,11 @@
 package pr05b.cliente;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -107,13 +107,26 @@ public class OyenteServidor extends Thread {
 					}
 					break;
 				case MENSAJE_EMITIR_FICHERO:
+				{
 					// TODO: Paso 1. Crear proceso emisor (serversocketsiesnecesario?)
-					Emisor e = new Emisor(((EmitirFicheroMensaje) msg).getFilename());
-					// TODO: Paso 2. Enviar mensaje con puerto del emisor (MENSAJE_PREPARADO_CLIENTESERVIDOR)
-					_oos.writeObject(new PreparadoClienteServidorMensaje(msg.getOrigen(), _username, e.getPort()));
+					String filename = ((EmitirFicheroMensaje) msg).getFilename();
+					try {
+						Emisor e = new Emisor(filename);
+						e.start();
+						// TODO: Paso 2. Enviar mensaje con puerto del emisor (MENSAJE_PREPARADO_CLIENTESERVIDOR)
+						_oos.writeObject(new PreparadoClienteServidorMensaje(
+								msg.getOrigen(), _username,_socket.getLocalAddress(), e.getPort(), filename));
+					} catch (FileNotFoundException e) {
+						System.err.printf("%s tried to request file %s, but it's not available%n",
+							msg.getOrigen(), filename);
+					}
+				}
 					break;
 				case MENSAJE_PREPARADO_SERVIDORCLIENTE:
 					// TODO: Paso 1. Crear proceso receptor, conectando a ip y puerto que ha llegado
+					PreparadoServidorClienteMensaje pscmsg = (PreparadoServidorClienteMensaje) msg;
+					Receptor r = new Receptor(pscmsg.getAddress(), pscmsg.getPort(), pscmsg.getFilename());
+					r.start();
 					// No es necesario que el emisor/receptor envie mensaje, se hace con .accept()
 					synchronized (this) {
 						_expects.put(msg.getTipo(), false);
@@ -131,7 +144,8 @@ public class OyenteServidor extends Thread {
 				}
 			}
 		} catch (IOException | ClassNotFoundException e) {
-			
+			System.err.println("Error processing received message");
+			System.err.println(e);
 		}
 	}
 }
