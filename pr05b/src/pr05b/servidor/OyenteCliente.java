@@ -58,12 +58,12 @@ public class OyenteCliente extends Thread {
 					// TODO Paso 1: Obtener el socket y el usuario asignado a dicho fichero
 					String fname = ((PedirFicheroMensaje) msg).getFilename();
 					Usuario u = _servidor.getUsuarioByFilename(fname);
-					OyenteCliente oc = _servidor.getOyenteClienteByUsername(u.getUserName());
+					OyenteCliente oc = _servidor.getOyenteClienteByUsername(u.getUsername());
 					// TODO Paso 2: Enviar el mensaje MENSAJE_EMITIR_FICHERO
 					if (oc != null)
-						oc._oos.writeObject(new EmitirFicheroMensaje(u.getUserName(), msg.getOrigen(), fname));
+						oc._oos.writeObject(new EmitirFicheroMensaje(u.getUsername(), msg.getOrigen(), fname));
 					else
-						System.out.printf("User %s not connected%n", u.getUserName());
+						System.out.printf("User %s not connected%n", u.getUsername());
 				}
 					break;
 				case MENSAJE_PREPARADO_CLIENTESERVIDOR:
@@ -84,6 +84,11 @@ public class OyenteCliente extends Thread {
 				default:
 					break;
 				}
+			}
+			
+			if (connected) {
+				_ois.reset();
+				_oos.reset();
 			}
 		} catch (ClassNotFoundException | IOException e) {
 			System.err.println(e);

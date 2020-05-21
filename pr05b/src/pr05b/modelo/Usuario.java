@@ -17,15 +17,16 @@ public class Usuario implements Serializable {
 	private String _userName;
 	private InetAddress _addr;
 	private List<InfoFichero> _info;
-	private boolean _connected = false;
+	private boolean _connected;
 	
 	public Usuario(String userName, InetAddress inetAddress) {
 		_userName = userName;
 		_addr = inetAddress;
 		_info = new ArrayList<>();
+		_connected = false;
 	}
 	
-	public String getUserName() {
+	public String getUsername() {
 		return _userName;
 	}
 	
@@ -33,12 +34,14 @@ public class Usuario implements Serializable {
 		return _addr;
 	}
 	
-	public void setConnected() {
+	public Usuario setConnected() {
 		_connected = true;
+		return this;
 	}
 	
-	public void setDisconnected() {
+	public Usuario setDisconnected() {
 		_connected = false;
+		return this;
 	}
 	
 	public boolean isConnected () {

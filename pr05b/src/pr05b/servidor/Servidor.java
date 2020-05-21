@@ -39,12 +39,12 @@ public class Servidor {
 	// (tendríamos que crear nuesttra propia clase Map para hacerlo
 	private ConcurrentHashMap<String, Usuario> _mapUsuarios;
 	private ConcurrentHashMap<OyenteCliente, Usuario> _mapClientes;
-	private List<InfoFichero> _listaFicheros;
 	
 	public Servidor(InetAddress host, int port) {
 		_host = host;
 		_port = port;
 		_mapClientes = new ConcurrentHashMap<>();
+		_mapUsuarios = new ConcurrentHashMap<>();
 	}
 	
 	public void runOyente() {
@@ -88,27 +88,6 @@ public class Servidor {
 		// the streams are closed
 	}
 	
-	@SuppressWarnings("unchecked")
-	public void readInformacion(String filename) throws IOException {
-		try (FileInputStream fis = new FileInputStream(filename);
-			 ObjectInputStream ois = new ObjectInputStream(fis)) {
-			_listaFicheros = (List<InfoFichero>) ois.readObject();
-			System.out.printf("Read %s%n", filename);
-		} catch (ClassNotFoundException e) {
-			System.err.println(e);
-		} catch (FileNotFoundException e) {
-			System.out.printf("File %s not found, creating%n", filename);
-			_listaFicheros = new ArrayList<InfoFichero>();
-		}
-	}
-	
-	public void writeInformacion(String filename) throws IOException {
-		try (FileOutputStream fos = new FileOutputStream(filename);
-			 ObjectOutputStream oos = new ObjectOutputStream(fos)) {
-			oos.writeObject(_listaFicheros);
-		}
-	}
-	
 	public static void main(String [] argv) throws UnknownHostException {		
 		if (argv.length != 1) {
 			System.err.println(USAGE);
@@ -136,7 +115,6 @@ public class Servidor {
 				System.out.println("Saving data...");
 				try {
 					s.writeUsuarios("listausuarios.ser");
-					s.writeInformacion("infoficheros.ser");
 				} catch (IOException e) {
 					System.err.println(e);
 				}
@@ -148,7 +126,6 @@ public class Servidor {
 			// TODO: Delete this
 			// s._mapUsuarios.get("davo").getInfoFicheros().add(new InfoFichero("fichero1.txt", -1));
 			// s._mapUsuarios.get("juan").getInfoFicheros().add(new InfoFichero("fichero2.txt", -1));
-			s.readInformacion("infoficheros.ser");
 			s.runOyente();
 		} catch (IOException e) {
 			System.err.println(e);
@@ -156,43 +133,29 @@ public class Servidor {
 	}
 	
 	public Usuario getUsuarioByFilename(String filename) {
-		for (Usuario u : _mapUsuarios.values()) {
-			for (InfoFichero f : u.getInfoFicheros()) {
-				if (f.path.equals(filename)) return u;
-			}
-		}
-		
-		return null;
+		return _mapUsuarios.searchValues(2, u->
+			u.getInfoFicheros().stream().anyMatch(f->f.path.equalsIgnoreCase(filename))?u:null
+		);
 	}
 	
 	public OyenteCliente getOyenteClienteByUsername(String username) {
-		for (Map.Entry<OyenteCliente, Usuario> e : _mapClientes.entrySet()) {
-			if (e.getValue().getUserName().equals(username)) return e.getKey();
-		}
-		
-		return null;
+		return _mapClientes.search(2, (k,u)->u.getUsername().equalsIgnoreCase(username)?k:null);
 	}
 
-	// TODO: Hay race conditions y además
-	// Aunque sea concurrenthashmap no se actualiza la referencia
-	// TODO: Preguntar sobre esto
 	public void connect(OyenteCliente oc, String origen) {
-		Usuario u = _mapUsuarios.get(origen); 
-		if (u == null) {
-			u = new Usuario(origen, oc._socket.getInetAddress());
-			_mapUsuarios.put(origen, u);
-		}
+		Usuario usuario = _mapUsuarios.compute(origen, (k,u)->{
+			if (u == null) u = (new Usuario(origen, oc._socket.getInetAddress()));
+			_mapClientes.put(oc,  u);
+			return u.setConnected();
+		});
 		
-		_mapClientes.put(oc, u);
-		u.setConnected();
+		System.out.printf("%s connected%n", usuario.getUsername());
 	}
 
+	// Usamos _mapUsuarios.compute como "lock" de _mapClientes
 	public void disconnect(OyenteCliente oc) {
-		Usuario u = _mapClientes.get(oc);
-		u.setDisconnected();
-		_mapClientes.remove(oc);
-		// assert(!u.isConnected());
-		// assert(!_mapUsuarios.get(u.getUserName()).isConnected());
-		System.out.printf("%s disconnected%n", u.getUserName());
+		Usuario usuario = _mapClientes.get(oc);
+		_mapUsuarios.computeIfPresent(usuario.getUsername(), (k,u) -> _mapClientes.remove(oc).setDisconnected()); 
+		System.out.printf("%s disconnected%n", usuario.getUsername());
 	}
 }

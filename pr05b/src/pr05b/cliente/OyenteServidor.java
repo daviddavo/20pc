@@ -63,6 +63,7 @@ public class OyenteServidor extends Thread {
 	}
 	
 	public synchronized List<Usuario> waitListaUsuarios() throws IOException {
+		_listaUsuarios = null;
 		if (_waitCommon(new ListaUsuariosMensaje(Servidor.SERVIDOR, _username), Tipo.MENSAJE_CONFIRMACION_LISTA_USUARIOS)) {
 			return null;
 		} else {
@@ -143,6 +144,8 @@ public class OyenteServidor extends Thread {
 					break;
 				}
 			}
+			if (connected)
+				ois.reset();
 		} catch (IOException | ClassNotFoundException e) {
 			System.err.println("Error processing received message");
 			System.err.println(e);

@@ -25,7 +25,7 @@ public class GetUserListCommand extends Command {
 				if (lu.isEmpty()) System.out.println("Warning: Empty user list");
 				for (Usuario u : lu) {
 					System.out.printf("%-10s%-20s%3c%n",
-						u.getUserName(), u.getInetAddress().getHostAddress(), u.isConnected()?'C':'D');
+						u.getUsername(), u.getInetAddress().getHostAddress(), u.isConnected()?'C':'D');
 					
 					for (InfoFichero f : u.getInfoFicheros()) {
 						System.out.printf("  | %-20s%5d Bytes%n", f.path, f.size);
