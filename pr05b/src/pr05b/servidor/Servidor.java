@@ -129,9 +129,6 @@ public class Servidor {
 		
 		try {
 			s.readUsuarios("listausuarios.ser");
-			// TODO: Delete this
-			// s._mapUsuarios.get("davo").getInfoFicheros().add(new InfoFichero("fichero1.txt", -1));
-			// s._mapUsuarios.get("juan").getInfoFicheros().add(new InfoFichero("fichero2.txt", -1));
 			s.runOyente();
 		} catch (IOException e) {
 			System.err.println(e);
@@ -158,6 +155,7 @@ public class Servidor {
 		System.out.printf("%s connected%n", usuario.getUsername());
 	}
 
+	// TOASK: Es suficiente esta concurrencia?
 	// Usamos _mapUsuarios.compute como "lock" de _mapClientes
 	public void disconnect(OyenteCliente oc) {
 		Usuario usuario = _mapClientes.get(oc);

@@ -31,7 +31,6 @@ public class BashCommand extends Command {
 
 	@Override
 	public void exec(Cliente cl) {
-		// TODO Auto-generated method stub
 		try {
 			ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", String.join(" ", _command));
 			pb.redirectErrorStream(true);

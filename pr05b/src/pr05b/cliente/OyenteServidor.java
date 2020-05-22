@@ -119,7 +119,7 @@ public class OyenteServidor extends Thread {
 					try {
 						Emisor e = new Emisor(filename);
 						e.start();
-						// TODO: Paso 2. Enviar mensaje con puerto del emisor (MENSAJE_PREPARADO_CLIENTESERVIDOR)
+						// Paso 2. Enviar mensaje con puerto del emisor (MENSAJE_PREPARADO_CLIENTESERVIDOR)
 						_oos.writeObject(new PreparadoClienteServidorMensaje(
 								msg.getOrigen(), _username,_socket.getLocalAddress(), e.getPort(), filename));
 					} catch (FileNotFoundException e) {
