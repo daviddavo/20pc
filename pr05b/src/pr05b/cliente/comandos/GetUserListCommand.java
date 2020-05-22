@@ -28,7 +28,7 @@ public class GetUserListCommand extends Command {
 						u.getUsername(), u.getInetAddress().getHostAddress(), u.isConnected()?'C':'D');
 					
 					for (InfoFichero f : u.getInfoFicheros()) {
-						System.out.printf("  | %-20s%5d Bytes%n", f.path, f.size);
+						System.out.printf("  | %-20s%5d Bytes%n", f.getPath(), f.getSize());
 					}
 				}
 			}

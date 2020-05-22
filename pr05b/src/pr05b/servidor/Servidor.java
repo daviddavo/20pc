@@ -60,6 +60,12 @@ public class Servidor {
 	}
 	
 	public List<Usuario> getListaUsuarios() {
+		for (Usuario u: _mapUsuarios.values()) {
+			System.out.printf("%s%20s%n", u.getUsername(), u.isConnected());
+			for (InfoFichero f : u.getInfoFicheros()) {
+				System.out.printf("  %s%n", f.getPath());
+			}
+		}
 		return new ArrayList<>(_mapUsuarios.values());
 	}
 	
@@ -102,7 +108,7 @@ public class Servidor {
 			host = InetAddress.getByName(aux[0]);
 			port = Integer.parseInt(aux[1]);
 		} else {
-			host = InetAddress.getLocalHost();
+			host = null;
 			port = Integer.parseInt(aux[0]);
 		}
 		
@@ -134,7 +140,7 @@ public class Servidor {
 	
 	public Usuario getUsuarioByFilename(String filename) {
 		return _mapUsuarios.searchValues(2, u->
-			u.getInfoFicheros().stream().anyMatch(f->f.path.equalsIgnoreCase(filename))?u:null
+			u.getInfoFicheros().stream().anyMatch(f->f.getPath().equalsIgnoreCase(filename))?u:null
 		);
 	}
 	
@@ -157,5 +163,9 @@ public class Servidor {
 		Usuario usuario = _mapClientes.get(oc);
 		_mapUsuarios.computeIfPresent(usuario.getUsername(), (k,u) -> _mapClientes.remove(oc).setDisconnected()); 
 		System.out.printf("%s disconnected%n", usuario.getUsername());
+	}
+
+	public void addInfoFichero(String origen, InfoFichero infoFichero) {
+		_mapUsuarios.get(origen).getInfoFicheros().add(infoFichero);
 	}
 }

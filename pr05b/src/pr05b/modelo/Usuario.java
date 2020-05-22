@@ -3,7 +3,9 @@ package pr05b.modelo;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Guarda información para un usaurio registrado en el sistema.
@@ -16,13 +18,13 @@ public class Usuario implements Serializable {
 	private static final long serialVersionUID = 2889129328878888688L;
 	private String _userName;
 	private InetAddress _addr;
-	private List<InfoFichero> _info;
+	private Set<InfoFichero> _info;
 	private boolean _connected;
 	
 	public Usuario(String userName, InetAddress inetAddress) {
 		_userName = userName;
 		_addr = inetAddress;
-		_info = new ArrayList<>();
+		_info = new HashSet<>();
 		_connected = false;
 	}
 	
@@ -48,7 +50,7 @@ public class Usuario implements Serializable {
 		return _connected;
 	}
 	
-	public List<InfoFichero> getInfoFicheros() {
+	public Set<InfoFichero> getInfoFicheros() {
 		return _info;
 	}
 }

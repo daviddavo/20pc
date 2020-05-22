@@ -4,17 +4,17 @@ import java.io.IOException;
 
 import pr05b.cliente.Cliente;
 
-public class DownloadCommand extends Command {
+public class GetCommand extends Command {
 	private String _filename;
 
-	public DownloadCommand() {
-		super("download", "establishes a connection and downloads a file");
+	public GetCommand() {
+		super("get", "establishes a connection and downloads a file");
 	}
 	
 	@Override
 	public Command parse(String [] args) {
 		if (args.length >= 1) {
-			if (args[0].equals("download")) {
+			if (args[0].equals(_name)) {
 				if (args.length != 2) throw new IllegalArgumentException("Usage: download filename");
 				
 				_filename = args[1];

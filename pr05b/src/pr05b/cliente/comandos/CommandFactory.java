@@ -9,8 +9,10 @@ public class CommandFactory {
 		new ExitCommand(),
 		new ConnectCommand(),
 		new DisconnectCommand(),
+		new AddFileCommand(),
 		new GetUserListCommand(),
-		new DownloadCommand(),
+		new GetCommand(),
+		new BashCommand(),
 		new NoneCommand()
 	};
 	

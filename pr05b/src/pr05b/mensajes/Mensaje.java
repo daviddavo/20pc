@@ -22,7 +22,10 @@ public abstract class Mensaje implements Serializable {
 		MENSAJE_LISTA_USUARIOS,
 		MENSAJE_CERRAR_CONEXION,
 		MENSAJE_PEDIR_FICHERO,
-		MENSAJE_PREPARADO_CLIENTESERVIDOR
+		MENSAJE_PREPARADO_CLIENTESERVIDOR,
+		// Añadidos por mi
+		MENSAJE_PUT_INFO_FICHERO,
+		MENSAJE_ACK_INFO_FICHERO,
 	}
 	
 	private String _destino = null;

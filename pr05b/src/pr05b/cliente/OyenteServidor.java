@@ -79,6 +79,10 @@ public class OyenteServidor extends Thread {
 		return _waitCommon(new PedirFicheroMensaje(Servidor.SERVIDOR, _username, filename), Tipo.MENSAJE_PREPARADO_SERVIDORCLIENTE);
 	}
 	
+	public synchronized boolean waitSendInfoFichero(InfoFichero fileinfo) throws IOException {
+		return _waitCommon(new InfoFicheroMensaje(Servidor.SERVIDOR, _username, fileinfo), Tipo.MENSAJE_ACK_INFO_FICHERO);
+	}
+	
 	@Override
 	public void run() {
 		boolean connected = true;
@@ -109,7 +113,8 @@ public class OyenteServidor extends Thread {
 					break;
 				case MENSAJE_EMITIR_FICHERO:
 				{
-					// TODO: Paso 1. Crear proceso emisor (serversocketsiesnecesario?)
+					// Paso 1. Crear proceso emisor
+					// TODO: Reutilizar serversocket si se está usando
 					String filename = ((EmitirFicheroMensaje) msg).getFilename();
 					try {
 						Emisor e = new Emisor(filename);
@@ -124,12 +129,18 @@ public class OyenteServidor extends Thread {
 				}
 					break;
 				case MENSAJE_PREPARADO_SERVIDORCLIENTE:
-					// TODO: Paso 1. Crear proceso receptor, conectando a ip y puerto que ha llegado
+					// Paso 1. Crear proceso receptor, conectando a ip y puerto que ha llegado
 					PreparadoServidorClienteMensaje pscmsg = (PreparadoServidorClienteMensaje) msg;
 					Receptor r = new Receptor(pscmsg.getAddress(), pscmsg.getPort(), pscmsg.getFilename());
 					r.start();
-					// No es necesario que el emisor/receptor envie mensaje, se hace con .accept()
+					// No es necesario que el emisor/receptor envie ningún  mensaje, se hace con .accept()
 					synchronized (this) {
+						_expects.put(msg.getTipo(), false);
+						notifyAll();
+					}
+					break;
+				case MENSAJE_ACK_INFO_FICHERO:
+					synchronized(this) {
 						_expects.put(msg.getTipo(), false);
 						notifyAll();
 					}
@@ -140,15 +151,14 @@ public class OyenteServidor extends Thread {
 				case MENSAJE_CONEXION:
 				case MENSAJE_LISTA_USUARIOS:
 				case MENSAJE_CERRAR_CONEXION:
-				default:
+				case MENSAJE_PUT_INFO_FICHERO:
 					break;
 				}
 			}
-			if (connected)
-				ois.reset();
 		} catch (IOException | ClassNotFoundException e) {
 			System.err.println("Error processing received message");
 			System.err.println(e);
 		}
 	}
+
 }

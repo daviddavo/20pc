@@ -8,6 +8,7 @@ import java.net.Socket;
 
 import pr05b.cliente.comandos.Command;
 import pr05b.cliente.comandos.CommandFactory;
+import pr05b.modelo.InfoFichero;
 import pr05b.servidor.Servidor;
 
 /**
@@ -30,8 +31,7 @@ public class Cliente {
 		
 		_srvAddr = addr;
 		_srvPort = port;
-		
-		// TODO: Don't create a whole new OyenteServidor
+
 		_os = new OyenteServidor(new Socket(_srvAddr, _srvPort), _username);
 		_os.start();
 		
@@ -118,5 +118,9 @@ public class Cliente {
 
 	public boolean beginDownload(String filename) throws IOException {
 		return _os.waitPedirFichero(filename);
+	}
+	
+	public boolean sendInfoFichero(InfoFichero fileinfo) throws IOException {
+		return _os.waitSendInfoFichero(fileinfo);
 	}
 }
