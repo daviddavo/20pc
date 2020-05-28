@@ -11,9 +11,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import pr05b.modelo.*;
 
@@ -30,13 +33,10 @@ public class Servidor {
 	private static final int EXIT_INCORRECT_ARGUMENTS = 1;
 	private InetAddress _host;
 	private int _port;
-	// Nota: Podríamos crear un lock para acceder al hashmap
-	// (al fin y al cabo es el problema de los readers-writers)
-	// Como ya lo hemos hecho en prácticas anteriores, no mostramos
-	// la implementación y usamos directamente ConcurrentHashMap que
-	// tiene optimizaciones de bajo nivel, y el bloqueo se realiza a nivel
-	// de tabla y permite incluso escrituras concurrentes a distintas claves
-	// (tendríamos que crear nuesttra propia clase Map para hacerlo
+
+	// Usamos este lock en las funciones de escritura (connect y disconnect)
+	// que además usan ambos hashmap.
+	private final Lock _mcLock;
 	private ConcurrentHashMap<String, Usuario> _mapUsuarios;
 	private ConcurrentHashMap<OyenteCliente, Usuario> _mapClientes;
 	
@@ -44,6 +44,7 @@ public class Servidor {
 		_host = host;
 		_port = port;
 		_mapClientes = new ConcurrentHashMap<>();
+		_mcLock = new ReentrantLock();
 		_mapUsuarios = new ConcurrentHashMap<>();
 	}
 	
@@ -60,17 +61,11 @@ public class Servidor {
 	}
 	
 	public List<Usuario> getListaUsuarios() {
-		for (Usuario u: _mapUsuarios.values()) {
-			System.out.printf("%s%20s%n", u.getUsername(), u.isConnected());
-			for (InfoFichero f : u.getInfoFicheros()) {
-				System.out.printf("  %s%n", f.getPath());
-			}
-		}
 		return new ArrayList<>(_mapUsuarios.values());
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void readUsuarios(String filename) throws IOException {
+	private void readUsuarios(String filename) throws IOException {
 		try (FileInputStream fis = new FileInputStream(filename);
 			 ObjectInputStream ois = new ObjectInputStream(fis)) {
 			 _mapUsuarios = new ConcurrentHashMap<>((Map<String, Usuario>) ois.readObject());
@@ -84,7 +79,7 @@ public class Servidor {
 		}
 	}
 	
-	public void writeUsuarios(String filename) throws IOException {
+	private void writeUsuarios(String filename) throws IOException {
 		try (FileOutputStream fos = new FileOutputStream(filename);
 			ObjectOutputStream oos = new ObjectOutputStream(fos)) {
 			for (Usuario u : _mapUsuarios.values()) u.setDisconnected();
@@ -142,24 +137,25 @@ public class Servidor {
 	}
 	
 	public OyenteCliente getOyenteClienteByUsername(String username) {
-		return _mapClientes.search(2, (k,u)->u.getUsername().equalsIgnoreCase(username)?k:null);
+		return _mapClientes.search(4, (k,u)->u.getUsername().equalsIgnoreCase(username)?k:null);
 	}
 
 	public void connect(OyenteCliente oc, String origen) {
-		Usuario usuario = _mapUsuarios.compute(origen, (k,u)->{
-			if (u == null) u = (new Usuario(origen, oc._socket.getInetAddress()));
-			_mapClientes.put(oc,  u);
-			return u.setConnected();
-		});
+		_mcLock.lock();
+		Usuario usuario = _mapUsuarios.getOrDefault(origen, new Usuario(origen, oc._socket.getInetAddress()));
+		usuario.setConnected();
+		_mapClientes.put(oc,  usuario);
+		_mcLock.unlock();
 		
 		System.out.printf("%s connected%n", usuario.getUsername());
 	}
 
-	// TOASK: Es suficiente esta concurrencia?
-	// Usamos _mapUsuarios.compute como "lock" de _mapClientes
 	public void disconnect(OyenteCliente oc) {
+		_mcLock.lock();
 		Usuario usuario = _mapClientes.get(oc);
-		_mapUsuarios.computeIfPresent(usuario.getUsername(), (k,u) -> _mapClientes.remove(oc).setDisconnected()); 
+		_mapClientes.remove(oc).setDisconnected();
+		_mcLock.unlock();
+		
 		System.out.printf("%s disconnected%n", usuario.getUsername());
 	}
 
