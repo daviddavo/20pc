@@ -142,21 +142,27 @@ public class Servidor {
 
 	public void connect(OyenteCliente oc, String origen) {
 		_mcLock.lock();
-		Usuario usuario = _mapUsuarios.getOrDefault(origen, new Usuario(origen, oc._socket.getInetAddress()));
-		usuario.setConnected();
-		_mapClientes.put(oc,  usuario);
-		_mcLock.unlock();
-		
-		System.out.printf("%s connected%n", usuario.getUsername());
+		try {
+			Usuario usuario = _mapUsuarios.getOrDefault(origen, new Usuario(origen, oc._socket.getInetAddress()));
+			usuario.setConnected();
+			_mapClientes.put(oc,  usuario);
+			_mapUsuarios.put(usuario.getUsername(), usuario);
+			System.out.printf("%s connected%n", usuario.getUsername());
+		} finally {
+			_mcLock.unlock();
+		}
 	}
 
 	public void disconnect(OyenteCliente oc) {
 		_mcLock.lock();
-		Usuario usuario = _mapClientes.get(oc);
-		_mapClientes.remove(oc).setDisconnected();
-		_mcLock.unlock();
-		
-		System.out.printf("%s disconnected%n", usuario.getUsername());
+		try {
+			Usuario usuario = _mapClientes.get(oc);
+			_mapClientes.remove(oc).setDisconnected();
+			_mapUsuarios.put(usuario.getUsername(), usuario);
+			System.out.printf("%s disconnected%n", usuario.getUsername());
+		} finally {
+			_mcLock.unlock();
+		}
 	}
 
 	public void addInfoFichero(String origen, InfoFichero infoFichero) {
