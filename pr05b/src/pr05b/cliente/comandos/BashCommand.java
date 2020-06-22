@@ -1,9 +1,6 @@
 package pr05b.cliente.comandos;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import pr05b.cliente.Cliente;
 
