@@ -1,3 +1,4 @@
+// Author: Ela K. Shepherd & David Davó
 
 public class LockRompeEmpate implements Lock {
 	private int n;

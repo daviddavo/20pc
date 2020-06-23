@@ -1,4 +1,4 @@
-
+// Author: Ela K. Shepherd & David Davó
 
 public class HiloDecremento extends Thread {
 	private DatosCompartidos dato;

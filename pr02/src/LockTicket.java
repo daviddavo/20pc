@@ -1,3 +1,5 @@
+// Author: Ela K. Shepherd & David Davó
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class LockTicket implements Lock{

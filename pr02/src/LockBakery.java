@@ -1,3 +1,4 @@
+// Author: Ela K. Shepherd & David Davó
 
 public class LockBakery implements Lock{
 	public int n;
@@ -10,9 +11,7 @@ public class LockBakery implements Lock{
 	}
 
 	private boolean op(int a,int b, int c, int d) {
-		boolean r=false;
-		if (a > c || (a==c && b>d)) r = true;
-		return r;
+		return a > c || (a==c && b>d);
 	}
 	
 	@Override
