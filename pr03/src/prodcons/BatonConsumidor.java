@@ -1,26 +1,31 @@
 package prodcons;
 
-public class Consumidor extends Thread {
+public class BatonConsumidor extends Thread {
 	private static long nextId = 0;
 	private long id;
-	private Almacen almacen;
+	private BatonAlmacen almacen;
 	private long n;
 	
-	public Consumidor(Almacen almacen, int n) {
+	public BatonConsumidor(BatonAlmacen almacen, int n) {
 		this.id = nextId++;
 		this.almacen = almacen;
 		this.n = n;
 		System.out.printf("[C] creado consumidor %d (%d productos)%n", this.id, this.n);
 	}
 	
-	public Consumidor(Almacen almacen) {
+	public BatonConsumidor(BatonAlmacen almacen) {
 		this(almacen, 100);
 	}
 	
 	@Override
 	public void run() {
 		for (int i = 0; i < n; i++) {
-			almacen.extraer();
+			try {
+				almacen.extraer(0);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 }

@@ -4,10 +4,11 @@ public class Main {
 
 	public static void main(String[] args) throws InterruptedException{
 		
-			int N = 5;
-			DatosCompartidos dato = new DatosCompartidos(new LockRompeEmpate(2*N), 0);
-//	    	DatosCompartidos dato = new DatosCompartidos(new LockTicket(2*N), 0);
-//			DatosCompartidos dato = new DatosCompartidos(new LockBakery(2*N), 0);
+			int N = 500;
+			// DatosCompartidos dato = new DatosCompartidos(new LockRompeEmpate(2*N), 0);
+	    	// DatosCompartidos dato = new DatosCompartidos(new LockTicket(2*N), 0);
+			// DatosCompartidos dato = new DatosCompartidos(new LockBakery(2*N), 0);
+			DatosCompartidos dato = new DatosCompartidos(new LockTicketMax(2*N, 2*N), 0);
 			Thread[] hilos = new Thread[2*N];
 	
 			
